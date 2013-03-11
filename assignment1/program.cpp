@@ -1,6 +1,6 @@
 #include <ctype.h>
 #include <iostream>
-#include "queue.cpp"
+#include "queue.h"
 #include <vector>
 #include <stdlib.h>
 
@@ -23,6 +23,7 @@ int main() {
 	vector<PCBQueue> disk_queues;
 	vector<PCBQueue> cdrw_queues;
 	CPU * cpu = new CPU;
+	cpu->currPCB = NULL;
 	
 	sys_gen(num_p, num_d, num_c);
 
@@ -47,37 +48,44 @@ int main() {
 	cout << "System generation section finished." << endl;
 
 	PCBHandler pcbFactory;
+	string input;
 
 	// Running CPU section of code that responds to user input
 	while(1) {
 
-		if (readyQueue.empty()) {
-			
-		}
-		else {
-
+		// Always have a process in CPU if the ready queue isn't empty
+		if (!readyQueue.empty()) {
 			if (cpu->currPCB == NULL) {
 				PCB * readyPCB = readyQueue.pop();
 				cpu->currPCB = readyPCB;
 				cpu->pcbState = "running";
 			}
 		}
-	
-		string input;
+			
 		cin >> input;
 
+		// Create new process
 		if (input == "A") {
 			PCB * newPCB = pcbFactory.createPCB();	
 			readyQueue.push(newPCB);
 			cout << "Created new process with process id: " << newPCB->pid << endl;
 		}
 
+		// Terminate the currently running process
 		else if (input == "t") {
-			cout << "Terminated process id: " << cpu->currPCB->pid << endl;
-			pcbFactory.terminatePCB(cpu->currPCB);	
-			cpu->currPCB = NULL;
+			if (cpu->currPCB == NULL) {
+				cout << "No processes running in the CPU." << endl;
+			}
+			else {
+				PCB * terminated = NULL;
+				terminated = cpu->currPCB;
+				cout << "Terminated process id: " << terminated->pid << endl;
+				cpu->currPCB = NULL;
+				pcbFactory.terminatePCB(terminated);
+			}
 		}
 	
+		// Output a snapshot of current processes
 		else if (input == "S") {
 			string option;
 			cin >> option;
@@ -138,7 +146,6 @@ int main() {
 				cpu->currPCB->length = length;
 				cpu->pcbState = "interrupted";
 
-
 				if (device == "p") {
 					currQueue = &print_queues[device_num];
 					cpu->currPCB->action = "w";								
@@ -148,7 +155,6 @@ int main() {
 					currQueue = &disk_queues[device_num];
 					cout << "Please enter if this is a read or write ('r' or 'w'): ";
 					cin >> action;
-					cout << endl;
 					cpu->currPCB->action = action;
 				}
 
@@ -156,7 +162,6 @@ int main() {
 					currQueue = &cdrw_queues[device_num];
 					cout << "Please enter if this is a read or write ('r' or 'w'): ";
 					cin >> action;
-					cout << endl;
 					cpu->currPCB->action = action;
 				}
 
