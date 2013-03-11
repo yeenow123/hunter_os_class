@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <iostream>
 #include "queue.cpp"
 #include <vector>
@@ -116,48 +117,73 @@ int main() {
 		}
 
 		else  {
+			// Process is requesting I/O
 			string device = input.substr(0, 1);
-			string filename, action;
-			int mem_loc, length;
-
-			cout << "Please enter the filename to write to: ";
-			cin >> filename;
-			cout << "Please enter the starting location in memory: ";
-			cin >> mem_loc;
-			cout << "Please enter the file length: ";
-			cin >> length;
-
-			cpu->currPCB->filename = filename;
-			cpu->currPCB->mem_loc = mem_loc;
-			cpu->currPCB->length = length;
-			cpu->pcbState = "interrupted";
-
-			PCBQueue * currQueue;
 			int device_num = atoi(input.substr(1,1).c_str());
+			PCBQueue * currQueue;
 
-			if (device == "p") {
-				currQueue = &print_queues[device_num];
-				cpu->currPCB->action = "w";								
+			if (islower(device[0])) {
+				string filename, action;
+				int mem_loc, length;
+
+				cout << "Please enter the filename to write to: ";
+				cin >> filename;
+				cout << "Please enter the starting location in memory: ";
+				cin >> mem_loc;
+				cout << "Please enter the file length: ";
+				cin >> length;
+
+				cpu->currPCB->filename = filename;
+				cpu->currPCB->mem_loc = mem_loc;
+				cpu->currPCB->length = length;
+				cpu->pcbState = "interrupted";
+
+
+				if (device == "p") {
+					currQueue = &print_queues[device_num];
+					cpu->currPCB->action = "w";								
+				}
+
+				else if (device == "d") {
+					currQueue = &disk_queues[device_num];
+					cout << "Please enter if this is a read or write ('r' or 'w'): ";
+					cin >> action;
+					cout << endl;
+					cpu->currPCB->action = action;
+				}
+
+				else if (device == "c") {
+					currQueue = &cdrw_queues[device_num];
+					cout << "Please enter if this is a read or write ('r' or 'w'): ";
+					cin >> action;
+					cout << endl;
+					cpu->currPCB->action = action;
+				}
+
+				currQueue->push(cpu->currPCB);
+				cpu->currPCB = NULL;
 			}
+			
+			// Signal completion of I/O request
+			else if (isupper(device[0])) {
 
-			else if (device == "d") {
-				currQueue = &disk_queues[device_num];
-				cout << "Please enter if this is a read or write ('r' or 'w'): ";
-				cin >> action;
-				cout << endl;
-				cpu->currPCB->action = action;
+				if (device == "P") {
+					currQueue = &print_queues[device_num];
+				}
+
+				else if (device == "D") {
+					currQueue = &disk_queues[device_num];
+				}
+
+				else if (device == "C") {
+					currQueue = &cdrw_queues[device_num];
+				}
+				
+				PCB * readyPCB;
+				readyPCB = currQueue->pop();
+				readyQueue.push(readyPCB);
+				cout << "Process with id " << readyPCB->pid << " has moved to the ready queue." << endl;
 			}
-
-			else if (device == "c") {
-				currQueue = &cdrw_queues[device_num];
-				cout << "Please enter if this is a read or write ('r' or 'w'): ";
-				cin >> action;
-				cout << endl;
-				cpu->currPCB->action = action;
-			}
-
-			currQueue->push(cpu->currPCB);
-			cpu->currPCB = NULL;
 		}
 	
 	}	
