@@ -3,6 +3,7 @@
 #include "queue.h"
 #include <vector>
 #include <stdlib.h>
+#include <limits>
 
 using namespace std;
 
@@ -100,7 +101,7 @@ int main() {
 				PCBQueue::snapshot_headers();
 
 				for (i=0; i<num_p; i++) {
-					print_queues[i].snapshot("s");
+					print_queues[i].snapshot();
 				}
 			}
 
@@ -109,7 +110,7 @@ int main() {
 				PCBQueue::snapshot_headers();
 
 				for (i=0; i<num_p; i++) {
-					disk_queues[i].snapshot("s");
+					disk_queues[i].snapshot();
 				}
 			}
 		
@@ -119,57 +120,112 @@ int main() {
 				PCBQueue::snapshot_headers();
 
 				for (i=0; i<num_p; i++) {
-					cdrw_queues[i].snapshot("s");
+					cdrw_queues[i].snapshot();
 				}
 			}
 		}
 
 		else  {
-			// Process is requesting I/O
+			
+			string device = input.substr(0, 1);
+			int device_num = atoi(input.substr(1,1).c_str());
 
 			if (cpu->currPCB == NULL) {
 				cout << "CPU is currently idle with no processes ready." << endl;
 			}
 
+			else if (device_num >= num_p || device_num >= num_d || device_num >= num_c) {
+				cout << "The device requested does not exist." << endl;
+			}
+
+			// Process is requesting I/O
 			else {
-				string device = input.substr(0, 1);
-				int device_num = atoi(input.substr(1,1).c_str());
+				
 				PCBQueue * currQueue;
 
 				if (islower(device[0])) {
 					string filename, action;
 					int mem_loc, length;
 
-					cout << "Please enter the filename to write to: ";
+					cout << "Please enter the filename to read from or write to: ";
 					cin >> filename;
-					cout << "Please enter the starting location in memory: ";
-					cin >> mem_loc;
-					cout << "Please enter the file length: ";
-					cin >> length;
+
+					// Verify memory location is a number
+					while (cout << "Please enter the starting location in memory (integer): " && !(cin >> mem_loc)) {
+							cout << "Invalid input. Please try again." << endl;
+							cin.clear();
+							cin.ignore(numeric_limits<streamsize>::max(), '\n');
+					}
+						
+					if (device == "p") {
+						currQueue = &print_queues[device_num];
+						cpu->currPCB->action = "w";
+
+						// Verify input is a number
+						while (cout << "Please enter the file length: " && !(cin >> length)) {
+							cout << "Invalid input. Please try again." << endl;
+							cin.clear();
+							cin.ignore(numeric_limits<streamsize>::max(), '\n');
+						}
+						
+					}
+
+					else if (device == "d") {
+						currQueue = &disk_queues[device_num];
+						
+						while (!(action == "r" || action == "w")) {
+							cout << "Please enter if this is a read or write ('r' or 'w'): "; 
+							cin.clear();
+							cin.ignore(numeric_limits<streamsize>::max(), '\n');
+							cin >> action;
+						}
+
+						cpu->currPCB->action = action;
+
+						if (action == "w") {
+							// Verify input is a number
+							while (cout << "Please enter the file length: " && !(cin >> length)) {
+								cout << "Invalid input. Please try again." << endl;
+								cin.clear();
+								cin.ignore(numeric_limits<streamsize>::max(), '\n');
+							}
+						}
+						else {
+							length = 0;
+						}
+					}
+
+					else if (device == "c") {
+						currQueue = &cdrw_queues[device_num];
+						
+						while (!(action == "r" || action == "w")) {
+							cout << "Please enter if this is a read or write ('r' or 'w'): "; 
+							cin.clear();
+							cin.ignore(numeric_limits<streamsize>::max(), '\n');
+							cin >> action;
+						}
+
+						cpu->currPCB->action = action;
+
+						if (action == "w") {
+
+							// Verify input is a number
+							while (cout << "Please enter the file length: " && !(cin >> length)) {
+								cout << "Invalid input. Please try again." << endl;
+								cin.clear();
+								cin.ignore(numeric_limits<streamsize>::max(), '\n');
+							}
+						}
+
+						else {
+							length = 0;
+						}
+					}
 
 					cpu->currPCB->filename = filename;
 					cpu->currPCB->mem_loc = mem_loc;
 					cpu->currPCB->length = length;
 					cpu->pcbState = "interrupted";
-
-					if (device == "p") {
-						currQueue = &print_queues[device_num];
-						cpu->currPCB->action = "w";								
-					}
-
-					else if (device == "d") {
-						currQueue = &disk_queues[device_num];
-						cout << "Please enter if this is a read or write ('r' or 'w'): ";
-						cin >> action;
-						cpu->currPCB->action = action;
-					}
-
-					else if (device == "c") {
-						currQueue = &cdrw_queues[device_num];
-						cout << "Please enter if this is a read or write ('r' or 'w'): ";
-						cin >> action;
-						cpu->currPCB->action = action;
-					}
 
 					currQueue->push(cpu->currPCB);
 					cpu->currPCB = NULL;
@@ -189,11 +245,19 @@ int main() {
 					else if (device == "C") {
 						currQueue = &cdrw_queues[device_num];
 					}
+
 					
-					PCB * readyPCB;
+					PCB * readyPCB = NULL;
 					readyPCB = currQueue->pop();
-					readyQueue.push(readyPCB);
-					cout << "Process with id " << readyPCB->pid << " has moved to the ready queue." << endl;
+
+					if (readyPCB == NULL) {
+						cout << "There are no processes in the device's queue." << endl;
+					}
+
+					else {
+						readyQueue.push(readyPCB);
+						cout << "Process with id " << readyPCB->pid << " has moved to the ready queue." << endl;
+					}
 				}
 			}
 		}

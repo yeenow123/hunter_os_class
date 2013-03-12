@@ -33,7 +33,7 @@ class PCBQueue {
 		bool empty();
 		static void snapshot_headers();
 		void print_pids();
-		void snapshot(string);
+		void snapshot();
 
 };
 

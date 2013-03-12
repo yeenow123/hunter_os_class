@@ -38,9 +38,15 @@ void PCBQueue::push(PCB * block) {
 }	
 
 PCB * PCBQueue::pop() {
-	PCB * currBlock = pcbqueue.front();
-	pcbqueue.pop_front();
-	return currBlock;
+	if (pcbqueue.empty()) {
+		return NULL;
+	}
+	else {
+		PCB * currBlock = pcbqueue.front();
+		pcbqueue.pop_front();
+		return currBlock;
+	}
+	
 }
 
 int PCBQueue::size() {
@@ -66,7 +72,7 @@ void PCBQueue::print_pids() {
 	}
 }
 
-void PCBQueue::snapshot(string input) {
+void PCBQueue::snapshot() {
 	int i;
 	PCB * currPCB;
 	cout << type << "---" <<  endl;
