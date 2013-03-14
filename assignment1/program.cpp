@@ -109,7 +109,7 @@ int main() {
 	
 				PCBQueue::snapshot_headers();
 
-				for (i=0; i<num_p; i++) {
+				for (i=0; i<num_d; i++) {
 					disk_queues[i].snapshot();
 				}
 			}
@@ -119,7 +119,7 @@ int main() {
 			
 				PCBQueue::snapshot_headers();
 
-				for (i=0; i<num_p; i++) {
+				for (i=0; i<num_c; i++) {
 					cdrw_queues[i].snapshot();
 				}
 			}
