@@ -67,9 +67,26 @@ int main() {
 
 		// Create new process
 		if (input == "A") {
+			string burst_estimate;
+			
+			cout << "Please enter the initial burst estimate of the new process in milliseconds: " << endl;
+			cin >> burst_estimate;
+
+			while (burst_estimate.find_first_not_of("1234567890.-") != string::npos) {
+				cout << "Invalid input.  Please try again: " << endl;
+				cin >> burst_estimate;
+			}		
+
 			PCB * newPCB = pcbFactory.createPCB();	
+			
+			newPCB->burst_estimate = atof(burst_estimate.c_str());
+			newPCB->curr_burst_time = 0;
+			newPCB->total_burst_time = 0;
 			readyQueue.push(newPCB);
+
 			cout << "Created new process with process id: " << newPCB->pid << endl;
+			cout << newPCB->burst_estimate;
+
 		}
 
 		// Terminate the currently running process
@@ -81,6 +98,10 @@ int main() {
 				PCB * terminated = NULL;
 				terminated = cpu->currPCB;
 				cout << "Terminated process id: " << terminated->pid << endl;
+				cout << "Process had a total CPU time of " << terminated->total_burst_time << endl;
+
+				cpu->total_cpu_time += terminated->total_burst_time;
+				cpu->num_processes++;
 				cpu->currPCB = NULL;
 				pcbFactory.terminatePCB(terminated);
 			}

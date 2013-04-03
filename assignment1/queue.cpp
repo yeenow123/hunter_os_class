@@ -49,6 +49,29 @@ PCB * PCBQueue::pop() {
 	
 }
 
+float PCBQueue::estimate_burst(float prev_burst_est, float prev_burst) {
+	float alpha = 0.5;
+	float next_burst;
+	next_burst = (alpha * prev_burst_est) + ((1 - alpha) * prev_burst);
+	return next_burst; 
+}
+
+void PCBQueue::sjf_schedule() {
+	int i;
+	PCB * currPCB;
+	float next_burst;
+	deque<PCB *> temp_queue;
+
+	// Calculate next burst time for each process in queue
+	for (i = 0; i < pcbqueue.size(); i++) {
+		currPCB = pcbqueue.at(i);
+		next_burst = estimate_burst(currPCB->burst_estimate, currPCB->curr_burst_time);
+		currPCB->curr_burst_time = next_burst;
+	}
+
+
+}
+
 int PCBQueue::size() {
 	return pcbqueue.size();
 }
@@ -111,6 +134,12 @@ void PCBHandler::setParameters(PCB * currPCB, string filename, int mem_loc, stri
 void PCBHandler::terminatePCB(PCB *& process) {
 	delete process;
 	process = NULL;
+}
+
+void PCBHandler::setCPUTime(PCB *& process, float time) {
+	process->total_burst_time += time;
+	process->curr_burst_time = time;
+
 }
 
 int PCBHandler::pidcounter = 0;

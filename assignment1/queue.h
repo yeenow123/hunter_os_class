@@ -9,11 +9,18 @@ struct PCB {
 	int mem_loc;
 	string action;
 	int length;
+	int cpu_usage;
+	float burst_estimate;
+	float curr_burst_time;
+	float total_burst_time;
+
 };
 
 struct CPU {
 	PCB * currPCB;
 	string pcbState;
+	int num_processes;
+	float total_cpu_time;
 
 };
 
@@ -24,11 +31,13 @@ class PCBQueue {
 		deque<PCB *> pcbqueue;
 		string type;
 		static int p_count, d_count, c_count;
+		float estimate_burst(float, float);
 
 	public:
 		PCBQueue(string);
 		void push(PCB *);
 		PCB * pop();
+		void sjf_schedule();
 		int size();
 		bool empty();
 		static void snapshot_headers();
@@ -44,4 +53,5 @@ class PCBHandler {
 		PCB * createPCB();
 		void setParameters(PCB *, string, int, string, int);
 		void terminatePCB(PCB *&);
+		void setCPUTime(PCB *&, float);
 };
