@@ -1,6 +1,6 @@
 #include <ctype.h>
 #include <iostream>
-#include "queue.h"
+#include "PCBHandler.h"
 #include <vector>
 #include <stdlib.h>
 #include <limits>
@@ -15,6 +15,19 @@ void sys_gen(int &num_p, int &num_d, int &num_c) {
 	cout << "Please enter the number of CD/RW in the system: ";
 	cin >> num_c;
 	
+}
+
+float validate_float() {
+	string input;
+	float output;
+	cin >> input;
+
+	while (input.find_first_not_of("1234567890.-") != string::npos) {
+		cout << "Invalid input.  Please try again: " << endl;
+		cin >> input;
+	}	
+	output = atof(input.c_str());
+	return output;
 }
 
 int main() {
@@ -67,25 +80,19 @@ int main() {
 
 		// Create new process
 		if (input == "A") {
-			string burst_estimate;
+			float burst_estimate;
 			
 			cout << "Please enter the initial burst estimate of the new process in milliseconds: " << endl;
-			cin >> burst_estimate;
-
-			while (burst_estimate.find_first_not_of("1234567890.-") != string::npos) {
-				cout << "Invalid input.  Please try again: " << endl;
-				cin >> burst_estimate;
-			}		
+			burst_estimate = validate_float();
 
 			PCB * newPCB = pcbFactory.createPCB();	
 			
-			newPCB->burst_estimate = atof(burst_estimate.c_str());
+			newPCB->burst_estimate = burst_estimate;
 			newPCB->curr_burst_time = 0;
 			newPCB->total_burst_time = 0;
-			readyQueue.push(newPCB);
+			readyQueue.sjf_insert(newPCB);
 
 			cout << "Created new process with process id: " << newPCB->pid << endl;
-			cout << newPCB->burst_estimate;
 
 		}
 
@@ -152,6 +159,7 @@ int main() {
 			int device_num = atoi(input.substr(1,1).c_str());
 				
 			PCBQueue * currQueue;
+
 
 			// Process is requesting I/O
 			if (islower(device[0]) && (device == "p" || device == "d" || device == "c")) {
@@ -252,9 +260,17 @@ int main() {
 						cin.ignore(numeric_limits<streamsize>::max(), '\n');
 				}
 
+				// Ask how much time the process has run
+				float process_time;
+				cout << "Please enter the amount of time the process has run (in milliseconds): " << endl;
+				process_time = validate_float();
+
 				cpu->currPCB->filename = filename;
 				cpu->currPCB->mem_loc = mem_loc;
 				cpu->currPCB->length = length;
+				cpu->currPCB->estimate_burst();
+				cpu->currPCB->curr_burst_time = process_time;
+				cpu->currPCB->total_burst_time += process_time;
 				cpu->pcbState = "interrupted";
 
 				currQueue->push(cpu->currPCB);
@@ -296,7 +312,7 @@ int main() {
 				}
 
 				else {
-					readyQueue.push(readyPCB);
+					readyQueue.sjf_insert(readyPCB);
 					cout << "Process with id " << readyPCB->pid << " has moved to the ready queue." << endl;
 				}
 			}
