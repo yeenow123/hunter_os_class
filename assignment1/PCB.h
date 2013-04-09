@@ -1,5 +1,6 @@
 #include <string>
-
+#ifndef PCB_H
+#define PCB_H
 using namespace std;
 
 struct PCB {
@@ -16,3 +17,5 @@ struct PCB {
 	void estimate_burst();
 
 };
+
+#endif

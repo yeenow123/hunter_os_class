@@ -1,6 +1,7 @@
 #include <ctype.h>
 #include <iostream>
 #include "PCBHandler.h"
+#include "DiskQueue.h"
 #include <vector>
 #include <stdlib.h>
 #include <limits>
@@ -30,11 +31,12 @@ float validate_float() {
 	return output;
 }
 
+
 int main() {
 	int num_p, num_d, num_c;
 	int i;
 	vector<PCBQueue> print_queues;
-	vector<PCBQueue> disk_queues;
+	vector<DiskQueue> disk_queues;
 	vector<PCBQueue> cdrw_queues;
 	CPU * cpu = new CPU;
 	cpu->currPCB = NULL;
@@ -48,8 +50,19 @@ int main() {
 	}
 
 	for (i=0; i<num_d; i++) {
-		PCBQueue disk_queue("d");
+		DiskQueue disk_queue("d");
 		disk_queues.push_back(disk_queue);
+	}
+
+	int num_cylinders;
+
+	for (i=0; i<disk_queues.size(); i++) {
+		while (cout << "Enter the number of cylinders for disk " << i << ": " && !(cin >> num_cylinders)) {
+			cout << "Invalid input. Please try again." << endl;
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		}
+		disk_queues[i].setCylinders(num_cylinders);		 
 	}
 
 	for (i=0; i<num_c; i++) {
@@ -90,6 +103,7 @@ int main() {
 			newPCB->burst_estimate = burst_estimate;
 			newPCB->curr_burst_time = 0;
 			newPCB->total_burst_time = 0;
+			newPCB->cpu_usage = 0;
 			readyQueue.sjf_insert(newPCB);
 
 			cout << "Created new process with process id: " << newPCB->pid << endl;
@@ -122,6 +136,7 @@ int main() {
 
 			if (option == "r") {
 				readyQueue.print_pids();
+				cout << "System's average time per process is: " << (cpu->total_cpu_time / cpu->num_processes) << endl;
 			}
 
 			else if (option == "p") {
@@ -271,6 +286,7 @@ int main() {
 				cpu->currPCB->estimate_burst();
 				cpu->currPCB->curr_burst_time = process_time;
 				cpu->currPCB->total_burst_time += process_time;
+				cpu->currPCB->cpu_usage++;
 				cpu->pcbState = "interrupted";
 
 				currQueue->push(cpu->currPCB);

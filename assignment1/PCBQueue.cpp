@@ -18,10 +18,6 @@ PCBQueue::PCBQueue(string queue_type) {
 		type = queue_type + i_to_s(p_count); 
 		p_count++;
 	}
-	else if (queue_type == "d") {
-		type = queue_type + i_to_s(d_count); 
-		d_count++;
-	}
 	else if (queue_type == "c") {
 		type = queue_type + i_to_s(c_count); 
 		c_count++;
@@ -84,16 +80,17 @@ bool PCBQueue::empty() {
 }
 
 void PCBQueue::snapshot_headers() {
-	cout << setw(5) << "pid" << setw(20) << "filename" << setw(10) << "memstart" << setw(5) << "r/w" << setw(10) << "length" << endl; 
+	cout << setw(5) << "pid" << setw(20) << "filename" << setw(10) << "memstart" << setw(5) << "r/w" << setw(10) << "length" << setw(10) << "totaltime" << setw(10) << "avgburst" << endl; 
 }
 
 void PCBQueue::print_pids() {
 	deque<PCB *>::iterator it;
 	PCB * currPCB;
-	cout << "pid" << endl;
+	cout << setw(5) << "pid" << setw(10) << "burst_est" << endl;
 	for (it = pcbqueue.begin(); it != pcbqueue.end(); ++it) {
 		currPCB = *it;
-		cout << currPCB->pid << " " << currPCB->burst_estimate << endl;
+		cout << setw(5) << currPCB->pid;
+		cout << setw(10) << currPCB->burst_estimate << endl;
 	}
 }
 
@@ -108,13 +105,14 @@ void PCBQueue::snapshot() {
 		cout << setw(10) << currPCB->mem_loc;
 		cout << setw(5) << currPCB->action;
 		cout << setw(10) << currPCB->length;
+		cout << setw(10) << currPCB->total_burst_time;
+		cout << setw(10) << (currPCB->total_burst_time / currPCB->cpu_usage); 
 		cout << endl;	
 		 
 	}
 }
 
 int PCBQueue::p_count = 0;
-int PCBQueue::d_count = 0;
 int PCBQueue::c_count = 0;
 
 

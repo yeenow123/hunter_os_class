@@ -1,6 +1,9 @@
 #include <deque>
 #include "PCB.h"
 
+#ifndef PCBQUEUE_H
+#define PCBQUEUE_H
+
 using namespace std;
 
 struct CPU {
@@ -14,10 +17,10 @@ struct CPU {
 string i_to_s(int);
 
 class PCBQueue {
-	private:
+	protected:
 		deque<PCB *> pcbqueue;
 		string type;
-		static int p_count, d_count, c_count;
+		static int p_count, c_count;
 
 	public:
 		PCBQueue(string);
@@ -32,4 +35,4 @@ class PCBQueue {
 
 };
 
-
+#endif
