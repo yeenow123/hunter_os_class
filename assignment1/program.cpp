@@ -62,7 +62,7 @@ int main() {
 			cin.clear();
 			cin.ignore(numeric_limits<streamsize>::max(), '\n');
 		}
-		disk_queues[i].setCylinders(num_cylinders);		 
+		disk_queues[i].set_cylinders(num_cylinders);		 
 	}
 
 	for (i=0; i<num_c; i++) {

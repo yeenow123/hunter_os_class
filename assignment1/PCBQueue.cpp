@@ -30,16 +30,16 @@ PCBQueue::PCBQueue(string queue_type) {
 }	
 
 void PCBQueue::push(PCB * block) {
-	pcbqueue.push_back(block);	
+	queue.push_back(block);	
 }	
 
 PCB * PCBQueue::pop() {
-	if (pcbqueue.empty()) {
+	if (queue.empty()) {
 		return NULL;
 	}
 	else {
-		PCB * currBlock = pcbqueue.front();
-		pcbqueue.pop_front();
+		PCB * currBlock = queue.front();
+		queue.pop_front();
 		return currBlock;
 	}
 	
@@ -52,28 +52,28 @@ void PCBQueue::sjf_insert(PCB * block) {
 	}
 	else {
 		deque<PCB *>::iterator it;
-		for (it = pcbqueue.begin(); it != pcbqueue.end(); ++it) {
+		for (it = queue.begin(); it != queue.end(); ++it) {
 			currPCB = *it;
 			if (block->burst_estimate < currPCB->burst_estimate) {
-				pcbqueue.insert(it, block);
+				queue.insert(it, block);
 				break;
 			}
 		}
 
 		// If process has longest burst estimate, push to back of queue (have to account for the last one separately)
-		if (it == pcbqueue.end()) {
-			pcbqueue.push_back(block);
+		if (it == queue.end()) {
+			queue.push_back(block);
 		}
 
 	}
 }
 
 int PCBQueue::size() {
-	return pcbqueue.size();
+	return queue.size();
 }
 
 bool PCBQueue::empty() {
-	if (pcbqueue.empty())
+	if (queue.empty())
 		return true;
 	else
 		return false;	
@@ -87,7 +87,7 @@ void PCBQueue::print_pids() {
 	deque<PCB *>::iterator it;
 	PCB * currPCB;
 	cout << setw(5) << "pid" << setw(10) << "burst_est" << endl;
-	for (it = pcbqueue.begin(); it != pcbqueue.end(); ++it) {
+	for (it = queue.begin(); it != queue.end(); ++it) {
 		currPCB = *it;
 		cout << setw(5) << currPCB->pid;
 		cout << setw(10) << currPCB->burst_estimate << endl;
@@ -98,8 +98,8 @@ void PCBQueue::snapshot() {
 	int i;
 	PCB * currPCB;
 	cout << type << "---" <<  endl;
-	for (i = 0; i < pcbqueue.size(); i++) {
-		currPCB = pcbqueue.at(i);
+	for (i = 0; i < queue.size(); i++) {
+		currPCB = queue.at(i);
 		cout << setw(5)  << currPCB->pid; 
 		cout << setw(20) << currPCB->filename;
 		cout << setw(10) << currPCB->mem_loc;

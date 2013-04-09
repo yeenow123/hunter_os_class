@@ -18,7 +18,7 @@ string i_to_s(int);
 
 class PCBQueue {
 	protected:
-		deque<PCB *> pcbqueue;
+		deque<PCB *> queue;
 		string type;
 		static int p_count, c_count;
 

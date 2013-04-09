@@ -5,10 +5,13 @@
 class DiskQueue: public PCBQueue {
 	private:
 		int cylinders;
+		int head_pos;
+		int direction;
 
 	public:
 		DiskQueue(string);
-	    void setCylinders(int);
+	    void set_cylinders(int);
+	    void look_algorithm();
 };
 
 #endif
