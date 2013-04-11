@@ -9,6 +9,7 @@ struct PCB {
 	int mem_loc;
 	string action;
 	int length;
+	int cylinder_loc;
 	int cpu_usage;
 	float burst_estimate;
 	float curr_burst_time;

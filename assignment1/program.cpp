@@ -31,6 +31,14 @@ float validate_float() {
 	return output;
 }
 
+void validate_integer(string cout_text, int &input) {
+	while (cout << cout_text && !(cin >> input)) {
+		cout << "Invalid input. Please try again." << endl;
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	}
+}
+
 
 int main() {
 	int num_p, num_d, num_c;
@@ -57,11 +65,7 @@ int main() {
 	int num_cylinders;
 
 	for (i=0; i<disk_queues.size(); i++) {
-		while (cout << "Enter the number of cylinders for disk " << i << ": " && !(cin >> num_cylinders)) {
-			cout << "Invalid input. Please try again." << endl;
-			cin.clear();
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
-		}
+		validate_integer("Enter the number of cylinders for disk ", num_cylinders);
 		disk_queues[i].set_cylinders(num_cylinders);		 
 	}
 
@@ -179,7 +183,7 @@ int main() {
 			// Process is requesting I/O
 			if (islower(device[0]) && (device == "p" || device == "d" || device == "c")) {
 				string filename, action;
-				int mem_loc, length;
+				int mem_loc, length, cylinder_loc;
 
 				if (cpu->currPCB == NULL) {
 					cout << "CPU is currently idle with no processes ready." << endl;
@@ -195,11 +199,7 @@ int main() {
 					cpu->currPCB->action = "w";
 
 					// Verify length is a number
-					while (cout << "Please enter the file length: " && !(cin >> length)) {
-						cout << "Invalid input. Please try again." << endl;
-						cin.clear();
-						cin.ignore(numeric_limits<streamsize>::max(), '\n');
-					}
+					validate_integer("Please enter the file length: ", length);
 					
 				}
 
@@ -218,15 +218,13 @@ int main() {
 						cin >> action;
 					}
 
+					validate_integer("Please enter the cylinder to access: ", cylinder_loc);
+
 					cpu->currPCB->action = action;
 
 					if (action == "w") {
 						// Verify length is a number
-						while (cout << "Please enter the file length: " && !(cin >> length)) {
-							cout << "Invalid input. Please try again." << endl;
-							cin.clear();
-							cin.ignore(numeric_limits<streamsize>::max(), '\n');
-						}
+						validate_integer("Please enter the file length: ", length);
 					}
 					else {
 						length = 0;
@@ -251,13 +249,8 @@ int main() {
 					cpu->currPCB->action = action;
 
 					if (action == "w") {
-
 						// Verify length is a number
-						while (cout << "Please enter the file length: " && !(cin >> length)) {
-							cout << "Invalid input. Please try again." << endl;
-							cin.clear();
-							cin.ignore(numeric_limits<streamsize>::max(), '\n');
-						}
+						validate_integer("Please enter the file length: ", length);
 					}
 
 					else {
@@ -269,11 +262,7 @@ int main() {
 				cin >> filename;
 
 				// Verify memory location is a number
-				while (cout << "Please enter the starting location in memory (integer): " && !(cin >> mem_loc)) {
-						cout << "Invalid input. Please try again." << endl;
-						cin.clear();
-						cin.ignore(numeric_limits<streamsize>::max(), '\n');
-				}
+				validate_integer("Please enter the starting location in memory (integer): ", mem_loc);
 
 				// Ask how much time the process has run
 				float process_time;
@@ -287,6 +276,7 @@ int main() {
 				cpu->currPCB->curr_burst_time = process_time;
 				cpu->currPCB->total_burst_time += process_time;
 				cpu->currPCB->cpu_usage++;
+				cpu->currPCB->cylinder_loc = cylinder_loc;
 				cpu->pcbState = "interrupted";
 
 				currQueue->push(cpu->currPCB);

@@ -40,10 +40,3 @@ void DiskQueue::look_algorithm() {
 
 	}
 }
-
-void DiskQueue::move_out() {
-}
-
-void DiskQueue::move_in() {
-
-}
