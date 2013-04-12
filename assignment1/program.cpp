@@ -9,6 +9,7 @@
 using namespace std;
 
 void sys_gen(int &num_p, int &num_d, int &num_c) {
+
 	cout << "Please enter the number of printers in the system: ";
 	cin >> num_p;
 	cout << "Please enter the number of disks in the system: ";
@@ -39,8 +40,44 @@ void validate_integer(string cout_text, int &input) {
 	}
 }
 
+PCB * create_process(PCBQueue &readyQueue, PCBHandler pcbFactory) {
+	float burst_estimate;
+			
+	cout << "Please enter the initial burst estimate of the new process in milliseconds: " << endl;
+	burst_estimate = validate_float();
 
-int main() {
+	PCB * newPCB = pcbFactory.createPCB();	
+	
+	newPCB->burst_estimate = burst_estimate;
+	newPCB->curr_burst_time = 0;
+	newPCB->total_burst_time = 0;
+	newPCB->cpu_usage = 0;
+	readyQueue.sjf_insert(newPCB);
+
+	cout << "Created new process with process id: " << newPCB->pid << endl;
+
+	return newPCB;
+}
+
+void terminate_process(CPU *&cpu, PCBHandler pcbFactory) {
+	if (cpu->currPCB == NULL) {
+		cout << "No processes running in the CPU." << endl;
+	}
+	else {
+		PCB * terminated = NULL;
+		terminated = cpu->currPCB;
+		cout << "Terminated process id: " << terminated->pid << endl;
+		cout << "Process had a total CPU time of " << terminated->total_burst_time << endl;
+
+		cpu->total_cpu_time += terminated->total_burst_time;
+		cpu->num_processes++;
+		cpu->currPCB = NULL;
+		pcbFactory.terminatePCB(terminated);
+	}
+}
+
+
+int main() {	
 	int num_p, num_d, num_c;
 	int i;
 	vector<PCBQueue> print_queues;
@@ -97,39 +134,12 @@ int main() {
 
 		// Create new process
 		if (input == "A") {
-			float burst_estimate;
-			
-			cout << "Please enter the initial burst estimate of the new process in milliseconds: " << endl;
-			burst_estimate = validate_float();
-
-			PCB * newPCB = pcbFactory.createPCB();	
-			
-			newPCB->burst_estimate = burst_estimate;
-			newPCB->curr_burst_time = 0;
-			newPCB->total_burst_time = 0;
-			newPCB->cpu_usage = 0;
-			readyQueue.sjf_insert(newPCB);
-
-			cout << "Created new process with process id: " << newPCB->pid << endl;
-
+			PCB * newPCB = create_process(readyQueue, pcbFactory);
 		}
 
 		// Terminate the currently running process
 		else if (input == "t") {
-			if (cpu->currPCB == NULL) {
-				cout << "No processes running in the CPU." << endl;
-			}
-			else {
-				PCB * terminated = NULL;
-				terminated = cpu->currPCB;
-				cout << "Terminated process id: " << terminated->pid << endl;
-				cout << "Process had a total CPU time of " << terminated->total_burst_time << endl;
-
-				cpu->total_cpu_time += terminated->total_burst_time;
-				cpu->num_processes++;
-				cpu->currPCB = NULL;
-				pcbFactory.terminatePCB(terminated);
-			}
+			terminate_process(cpu, pcbFactory);
 		}
 	
 		// Output a snapshot of current processes
