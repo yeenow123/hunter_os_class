@@ -7,7 +7,8 @@ class DiskQueue: public PCBQueue {
 		int head_pos;
 		int direction; 
 		int switch_flag;
-		bool scanning;
+		bool scanning1;
+		bool scanning2;
 		static int d_count;
 		deque<PCB *> queue1;
 		deque<PCB *> queue2;	
@@ -15,7 +16,7 @@ class DiskQueue: public PCBQueue {
 	public:
 		DiskQueue(string);
 	    void set_cylinders(int);
-	    void fscan(deque <PCB *>);
+	    void fscan(deque <PCB *> &);
 		void push(PCB *);
 		static void snapshot_headers();
 		int size();

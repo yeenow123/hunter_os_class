@@ -78,11 +78,13 @@ void terminate_process(CPU *&cpu, PCBHandler pcbFactory) {
 int main() {	
 	int num_p, num_d, num_c;
 	int i;
-	float alpha, burst_estimate;
+	float alpha = -1;
+	float burst_estimate;
 	vector<PCBQueue> print_queues;
 	vector<DiskQueue> disk_queues;
 	vector<PCBQueue> cdrw_queues;
 	CPU * cpu = new CPU;
+	cpu->total_cpu_time = 0;
 	cpu->currPCB = NULL;
 	
 	sys_gen(num_p, num_d, num_c, burst_estimate);
@@ -112,8 +114,10 @@ int main() {
 
 	PCBQueue readyQueue("r");
 
-	cout << "Please enter the value for alpha, a number between 0.0 and 1.0" << endl;
-	alpha = validate_float();
+	while (alpha > 1.0 || alpha < 0.0) {
+		cout << "Please enter the value for alpha, a number between 0.0 and 1.0" << endl;
+		alpha = validate_float();
+	}
 
 	cout << "System generation section finished." << endl;
 
