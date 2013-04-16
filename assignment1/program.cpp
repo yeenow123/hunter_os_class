@@ -314,7 +314,8 @@ int main() {
 				cpu->currPCB->cpu_usage++;
 				cpu->currPCB->cylinder_loc = cylinder_loc;
 				cpu->currPCB->actual_time = 0;
-	
+				cpu->currPCB->remaining_time = cpu->currPCB->burst_estimate;	
+
 				if (currQueue == NULL) {
 					currDiskQueue->push(cpu->currPCB);
 				}
