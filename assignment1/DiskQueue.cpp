@@ -57,14 +57,21 @@ int DiskQueue::size() {
 PCB * DiskQueue::pop() { 
 	PCB * currBlock;
 	if (switch_flag == 0) {
-		currBlock = queue1.front();
-		queue1.pop_front();
+		if (queue1.empty())
+			currBlock = NULL;
+		else {
+			currBlock = queue1.front();
+			queue1.pop_front();
+		}
 	}
 
 	else if (switch_flag == 1) {
-		currBlock = queue2.front();
-		queue2.pop_front();
-		
+		if (queue2.empty())
+			currBlock = NULL;
+		else {
+			currBlock = queue2.front();
+			queue2.pop_front();
+		}
 	}
 	return currBlock;
 }
@@ -73,6 +80,10 @@ void DiskQueue::fscan(deque <PCB *> & currQueue) {
 	deque<PCB *>::iterator it;
 	bool found;
 	PCB * currPCB;
+
+	if (currQueue.empty()) {
+		return;
+	}
 
 	found = false;
 	while (!found) {

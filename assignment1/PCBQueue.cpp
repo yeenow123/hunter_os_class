@@ -90,12 +90,12 @@ void PCBQueue::snapshot_headers() {
 void PCBQueue::print_pids() {
 	deque<PCB *>::iterator it;
 	PCB * currPCB;
-	cout << setw(5) << "pid" << setw(10) << "burst_est" << setw(10) << "act_time" << endl;
+	cout << setw(5) << "pid" << setw(10) << "burst_est" << setw(10) << "rem_time" << endl;
 	for (it = queue.begin(); it != queue.end(); ++it) {
 		currPCB = *it;
 		cout << setw(5) << currPCB->pid;
 		cout << setw(10) << currPCB->burst_estimate;
-		cout << setw(10) << currPCB->actual_time << endl;
+		cout << setw(10) << currPCB->remaining_time << endl;
 	}
 }
 

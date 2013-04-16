@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <cmath>
 #include <iostream>
 #include "PCBHandler.h"
 #include "DiskQueue.h"
@@ -133,7 +134,7 @@ int main() {
 				PCB * readyPCB = readyQueue.pop();
 				cpu->currPCB = readyPCB;
 			}
-			else if (cpu->currPCB->burst_estimate > readyQueue.peek()->burst_estimate && sys_call == true) {
+			else if (cpu->currPCB->burst_estimate > readyQueue.peek()->remaining_time && sys_call == true) {
 				float usage;
 				cout << "Another process with a shorter burst estimate has pre-empted the current process." << endl;
 				cout << "Please enter the amount of time the process has run: " << endl;
@@ -141,7 +142,7 @@ int main() {
 				cpu->currPCB->actual_time += usage;
 				cpu->currPCB->remaining_time -= usage;
 
-				if (cpu->currPCB->remaining_time > readyQueue.peek()->burst_estimate && sys_call == true) {
+				if (cpu->currPCB->remaining_time > readyQueue.peek()->remaining_time && sys_call == true) {
 					PCB * readyPCB = readyQueue.pop();
 					readyQueue.sjf_insert(cpu->currPCB);
 					cpu->currPCB = readyPCB;			
@@ -177,7 +178,7 @@ int main() {
 
 			if (option == "r") {
 				readyQueue.print_pids();
-				cout << "System's average time per process is: " << (cpu->total_cpu_time / cpu->num_processes) << endl;
+				cout << "System's average time per process is: " << floor((cpu->total_cpu_time / cpu->num_processes) * 100 + 0.5) / 100 << endl;
 			}
 
 			else if (option == "p") {
