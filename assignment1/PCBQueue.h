@@ -8,7 +8,6 @@ using namespace std;
 
 struct CPU {
 	PCB * currPCB;
-	string pcbState;
 	int num_processes;
 	float total_cpu_time;
 
@@ -25,6 +24,7 @@ class PCBQueue {
 	public:
 		PCBQueue(string);
 		void push(PCB *);
+		PCB * peek();
 		PCB * pop();
 		void sjf_insert(PCB *);
 		int size();

@@ -22,7 +22,7 @@ void PCBHandler::terminatePCB(PCB *& process) {
 
 void PCBHandler::setCPUTime(PCB *& process, float time) {
 	process->total_burst_time += time;
-	process->curr_burst_time = time;
+	process->actual_time = time;
 
 }
 

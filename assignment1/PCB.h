@@ -12,10 +12,11 @@ struct PCB {
 	int cylinder_loc;
 	int cpu_usage;
 	float burst_estimate;
-	float curr_burst_time;
+	float remaining_time;
+	float actual_time;
 	float total_burst_time;
 
-	void estimate_burst();
+	void estimate_burst(float);
 
 };
 

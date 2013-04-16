@@ -4,14 +4,25 @@
 #define DISKQUEUE_H
 class DiskQueue: public PCBQueue {
 	private:
-		int cylinders;
 		int head_pos;
-		int direction;
-
+		int direction; 
+		int switch_flag;
+		bool scanning;
+		static int d_count;
+		deque<PCB *> queue1;
+		deque<PCB *> queue2;	
+	
 	public:
 		DiskQueue(string);
 	    void set_cylinders(int);
-	    void look_algorithm();
+	    void fscan(deque <PCB *>);
+		void push(PCB *);
+		static void snapshot_headers();
+		int size();
+		PCB * pop();
+		void snapshot();
+		int cylinders;
+		void switchQueue();
 };
 
 #endif

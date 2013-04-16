@@ -54,7 +54,7 @@ void PCBQueue::sjf_insert(PCB * block) {
 		deque<PCB *>::iterator it;
 		for (it = queue.begin(); it != queue.end(); ++it) {
 			currPCB = *it;
-			if (block->burst_estimate < currPCB->burst_estimate) {
+			if (block->burst_estimate <= currPCB->burst_estimate) {
 				queue.insert(it, block);
 				break;
 			}
@@ -79,6 +79,10 @@ bool PCBQueue::empty() {
 		return false;	
 }
 
+PCB * PCBQueue::peek() {
+	return queue.front();
+}
+
 void PCBQueue::snapshot_headers() {
 	cout << setw(5) << "pid" << setw(20) << "filename" << setw(10) << "memstart" << setw(5) << "r/w" << setw(10) << "length" << setw(10) << "totaltime" << setw(10) << "avgburst" << endl; 
 }
@@ -86,11 +90,12 @@ void PCBQueue::snapshot_headers() {
 void PCBQueue::print_pids() {
 	deque<PCB *>::iterator it;
 	PCB * currPCB;
-	cout << setw(5) << "pid" << setw(10) << "burst_est" << endl;
+	cout << setw(5) << "pid" << setw(10) << "burst_est" << setw(10) << "act_time" << endl;
 	for (it = queue.begin(); it != queue.end(); ++it) {
 		currPCB = *it;
 		cout << setw(5) << currPCB->pid;
-		cout << setw(10) << currPCB->burst_estimate << endl;
+		cout << setw(10) << currPCB->burst_estimate;
+		cout << setw(10) << currPCB->actual_time << endl;
 	}
 }
 
