@@ -23,7 +23,11 @@ float validate_float() {
 	return output;
 }
 
-void sys_gen(int &num_p, int &num_d, int &num_c, float &burst_estimate) {
+bool isPowerOfTwo(int x) {
+	return (x != 0) && ((x & (x - 1)) == 0);
+}
+
+void sys_gen(int &num_p, int &num_d, int &num_c, float &burst_estimate, int &total_mem, int &max_process_mem, int &page_size) {
 
 	cout << "Please enter the number of printers in the system: ";
 	cin >> num_p;
@@ -35,6 +39,19 @@ void sys_gen(int &num_p, int &num_d, int &num_c, float &burst_estimate) {
 	cout << "Please enter the initial burst estimate of all processes (float): " << endl;
 	burst_estimate = validate_float();
 
+
+	cout << "Please enter the max process size: " << endl;
+	cin >> max_process_mem;
+
+	while (page_size <= 0 || total_mem % page_size != 0 || total_mem <= 0) {
+			page_size = 0;	
+			while (isPowerOfTwo(page_size) != true) { 
+				cout << "Please enter the page size: " << endl;
+				cin >> page_size;
+			}
+			cout << "Please enter the total size of memory: " << endl;
+			cin >> total_mem;
+	}
 }
 
 void validate_integer(string cout_text, int &input) {
@@ -81,6 +98,7 @@ int main() {
 	int i;
 	float alpha = -1;
 	float burst_estimate;
+	int total_mem, max_process_mem, page_size = 0;
 	vector<PCBQueue> print_queues;
 	vector<DiskQueue> disk_queues;
 	vector<PCBQueue> cdrw_queues;
@@ -88,7 +106,7 @@ int main() {
 	cpu->total_cpu_time = 0;
 	cpu->currPCB = NULL;
 	
-	sys_gen(num_p, num_d, num_c, burst_estimate);
+	sys_gen(num_p, num_d, num_c, burst_estimate, total_mem, max_process_mem, page_size);
 
 	// Create all queues and push them to their respective arrays (vectors)
 	for (i=0; i<num_p; i++) {
@@ -157,7 +175,9 @@ int main() {
 
 		// Create new process
 		if (input == "A") {
+			int proc_mem;
 			PCB * newPCB = create_process(readyQueue, pcbFactory);
+			validate_int("Please enter the process memory size: ", proc_mem);
 			newPCB->remaining_time = burst_estimate;
 			newPCB->burst_estimate = burst_estimate;
 			newPCB->actual_time = 0;

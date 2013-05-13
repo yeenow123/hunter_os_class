@@ -7,6 +7,7 @@ struct PCB {
 	int pid;
 	string filename;
 	int mem_loc;
+	int mem_size;
 	string action;
 	int length;
 	int cylinder_loc;
