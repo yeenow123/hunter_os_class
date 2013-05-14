@@ -53,13 +53,13 @@ PCB * PCBQueue::getPCB(int pid) {
 	for (it = queue.begin(); it != queue.end(); ++it) {
 		currPCB = *it;
 		if (pid == currPCB->pid) {
-			foundPCB = *it;
+			foundPCB = currPCB;
 			break;	
 		}
 	}
 	i = std::distance(queue.begin(), it);
 	queue.erase(queue.begin() + i);
-	cout << "Yo";
+	
 	return foundPCB;	
 }
 

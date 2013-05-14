@@ -185,7 +185,6 @@ int main() {
 		
 		if (job_pool.check_fit(frame_table.num_free_frames()) == true && job_pool.empty() == false) {
 			PCB * pooledPCB;
-			cout << "Check fit" << endl;
 			pooledPCB = job_pool.largest_fit(frame_table.num_free_frames());
 			pooledPCB->setup_page_table(pooledPCB->mem_size, page_size);								
 			frame_table.allocate_frames(pooledPCB->pages, pooledPCB->pid);
@@ -483,10 +482,13 @@ int main() {
 
 					}	
 					if (killPCB == NULL) {
+						cout << "Process not found." << endl;
+					}
+					if (killPCB == NULL) {
 						for (e = 0; e < print_queues.size(); e++) {
 							if (killPCB == NULL) {
 								killPCB = print_queues[e].getPCB(kill_pid);	
-								
+								cout << "This should print" << endl;	
 							}
 							else {
 								break;
@@ -515,9 +517,6 @@ int main() {
 								break;
 						}
 					}
-					if (killPCB == NULL) {
-						cout << "Process not found." << endl;
-					}
 					else {
 						
 						PCB * terminated = NULL;
@@ -525,8 +524,8 @@ int main() {
 						cout << "Terminated process id: " << terminated->pid << endl;
 						cout << "Process had a total CPU time of " << terminated->total_burst_time << endl;
 						
-						//pcbFactory.terminatePCB(terminated);
-						frame_table.free_frames(terminated->pid);
+						pcbFactory.terminatePCB(terminated);
+						frame_table.free_frames(kill_pid);
 						cout << "Finished free frames" << endl;
 						sys_call = true;
 					}

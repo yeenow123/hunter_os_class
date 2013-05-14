@@ -12,10 +12,12 @@ FrameTable::FrameTable(int frames) {
 
 void FrameTable::free_frames(int pid) {
 	int i;
+	cout << "pid is " << pid << endl;
 	for (i = 0; i < frame_table.size(); i++) {
 		if (frame_table[i] == pid) {
 			frame_table[i] = -1;
 		}
+		cout << i << endl;
 	}
 
 }
