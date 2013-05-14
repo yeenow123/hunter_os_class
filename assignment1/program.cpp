@@ -141,6 +141,7 @@ int main() {
 	}
 
 	PCBQueue readyQueue("r");
+	PCBQueue job_pool("j");
 
 	while (alpha > 1.0 || alpha < 0.0) {
 		cout << "Please enter the value for alpha, a number between 0.0 and 1.0" << endl;
@@ -181,7 +182,26 @@ int main() {
 				}
 			}	
 		}
-			
+		
+		if (job_pool.check_fit(frame_table.num_free_frames()) == true && job_pool.empty() == false) {
+			PCB * pooledPCB;
+			cout << "Check fit" << endl;
+			pooledPCB = job_pool.largest_fit(frame_table.num_free_frames());
+			pooledPCB->setup_page_table(pooledPCB->mem_size, page_size);								
+			frame_table.allocate_frames(pooledPCB->pages, pooledPCB->pid);
+
+			int m, n;
+			for (m = 0; m < frame_table.frame_table.size(); m++) {
+				if (frame_table.frame_table[m] == pooledPCB->pid) {
+					for (n = 0; n < pooledPCB->pages; n++) {
+						if (pooledPCB->page_table[n] == -1) {
+							pooledPCB->page_table[n] = m;
+							break;	
+						}	
+					}
+				}
+			}	
+		}			
 		cin >> input;
 
 		// Create new process
@@ -203,20 +223,26 @@ int main() {
 				newPCB->burst_estimate = burst_estimate;
 				newPCB->actual_time = 0;
 				newPCB->mem_size = proc_mem;
-				newPCB->setup_page_table(proc_mem, page_size);								
-				frame_table.allocate_frames(newPCB->pages, newPCB->pid);
+				if (frame_table.isFull(newPCB->pages)) {
+					job_pool.push(newPCB);
+				}
 
-				int m, n = 0;
-				for (m; m < frame_table.frame_table.size(); m++) {
-					
-					for (n; n < newPCB->pages; n++) {
-						if (frame_table.frame_table[m] == newPCB->pid) {
-							cout << m << " " << n << endl;
-							newPCB->page_table[n] = m;
-							
+				else {
+						newPCB->setup_page_table(proc_mem, page_size);								
+						frame_table.allocate_frames(newPCB->pages, newPCB->pid);
+
+						int m, n;
+						for (m = 0; m < frame_table.frame_table.size(); m++) {
+							if (frame_table.frame_table[m] == newPCB->pid) {
+									for (n = 0; n < newPCB->pages; n++) {
+										if (newPCB->page_table[n] == -1) {
+											newPCB->page_table[n] = m;
+											break;	
+										}	
+									}
+							}
 						}	
-					}
-				}	
+				}
 				sys_call = true;
 			}
 		}
@@ -442,7 +468,69 @@ int main() {
 			}
 
 			else if (device == "K") {
-				
+				int kill_pid = device_num;		
+				PCB * killPCB = NULL;
+				// Search for the process
+			
+				if (cpu->currPCB->pid == kill_pid) {
+					killPCB = cpu->currPCB;
+					terminate_process(cpu, pcbFactory, kill_pid);
+				}		
+				else {
+					int e;
+					if (killPCB == NULL) {
+						killPCB = readyQueue.getPCB(kill_pid);
+
+					}	
+					if (killPCB == NULL) {
+						for (e = 0; e < print_queues.size(); e++) {
+							if (killPCB == NULL) {
+								killPCB = print_queues[e].getPCB(kill_pid);	
+								
+							}
+							else {
+								break;
+							}
+						}
+					}
+					
+					if (killPCB == NULL) {
+						
+						for (e = 0; e < cdrw_queues.size(); e++) {
+							if (killPCB == NULL) {
+								killPCB = cdrw_queues[e].getPCB(kill_pid);	
+							}
+							else
+								break;
+						}
+					}	
+
+					if (killPCB == NULL) {
+						
+						for (e = 0; e < disk_queues.size(); e++) {
+							if (killPCB == NULL) {
+								killPCB = disk_queues[e].getPCB(kill_pid);	
+							}
+							else
+								break;
+						}
+					}
+					if (killPCB == NULL) {
+						cout << "Process not found." << endl;
+					}
+					else {
+						
+						PCB * terminated = NULL;
+						terminated = killPCB;
+						cout << "Terminated process id: " << terminated->pid << endl;
+						cout << "Process had a total CPU time of " << terminated->total_burst_time << endl;
+						
+						//pcbFactory.terminatePCB(terminated);
+						frame_table.free_frames(terminated->pid);
+						cout << "Finished free frames" << endl;
+						sys_call = true;
+					}
+				}
 			}
 
 			else {

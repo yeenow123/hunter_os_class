@@ -12,12 +12,23 @@ FrameTable::FrameTable(int frames) {
 
 void FrameTable::free_frames(int pid) {
 	int i;
-	frame_table[i] = -1;
 	for (i = 0; i < frame_table.size(); i++) {
 		if (frame_table[i] == pid) {
 			frame_table[i] = -1;
 		}
 	}
+
+}
+
+int FrameTable::num_free_frames() {
+	int count = 0;
+
+	for (int i = 0; i < frame_table.size(); i++) {
+		if (frame_table[i] == -1) {
+			count++;
+		}
+	}
+	return count;
 }
 
 bool FrameTable::isFull(int num_pages) {

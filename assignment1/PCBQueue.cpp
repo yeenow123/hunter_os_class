@@ -45,6 +45,46 @@ PCB * PCBQueue::pop() {
 	
 }
 
+PCB * PCBQueue::getPCB(int pid) {
+	PCB * currPCB = NULL;
+	PCB * foundPCB = NULL;
+	int i;
+	deque <PCB *>::iterator it;
+	for (it = queue.begin(); it != queue.end(); ++it) {
+		currPCB = *it;
+		if (pid == currPCB->pid) {
+			foundPCB = *it;
+			break;	
+		}
+	}
+	i = std::distance(queue.begin(), it);
+	queue.erase(queue.begin() + i);
+	cout << "Yo";
+	return foundPCB;	
+}
+
+PCB * PCBQueue::largest_fit(int free_mem) {
+	PCB * currPCB;
+	int max_index = 0;
+	deque <PCB *>::iterator it;
+	int i;
+	for (it = queue.begin(); it != queue.end(); ++it) {
+		currPCB = *it;
+		if (currPCB->mem_size <= free_mem) {
+			if (currPCB->mem_size > queue.at(max_index)->mem_size) {
+				max_index = std::distance(queue.begin(), it);
+			}
+		}
+	}
+	it = queue.begin();	
+	for (int i=0; i < max_index; i++) {
+		it++;
+	}	
+	currPCB = queue.at(max_index);
+	queue.erase(it);
+	return currPCB;
+}
+
 void PCBQueue::sjf_insert(PCB * block) {
 	PCB * currPCB;
 	if (empty() == true) {
@@ -66,6 +106,17 @@ void PCBQueue::sjf_insert(PCB * block) {
 		}
 
 	}
+}
+
+bool PCBQueue::check_fit(int num_free_frames) {
+	int i;
+
+	for (i=0; i < queue.size(); i++) {
+		if (queue.at(i)->mem_size <= num_free_frames) {
+			return true;	
+		}
+	}
+	return false;
 }
 
 int PCBQueue::size() {

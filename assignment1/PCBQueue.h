@@ -32,7 +32,9 @@ class PCBQueue {
 		static void snapshot_headers();
 		void print_pids();
 		void snapshot();
-
+		PCB * largest_fit(int);
+		bool check_fit(int);
+		PCB * getPCB(int);
 };
 
 #endif

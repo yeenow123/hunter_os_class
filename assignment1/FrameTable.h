@@ -13,6 +13,7 @@ class FrameTable {
 		void free_frames(int);
 		bool isFull(int);
 		void allocate_frames(int, int);
+		int num_free_frames();
 };
 
 #endif
