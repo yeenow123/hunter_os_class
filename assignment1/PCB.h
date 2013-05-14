@@ -16,9 +16,13 @@ struct PCB {
 	float remaining_time;
 	float actual_time;
 	float total_burst_time;
-
+	int* page_table;
+	int pages;
+	
 	void estimate_burst(float);
-
+	void setup_page_table(int, int);
+	int roundUp(int, int);	 
+	void print_page_table();
 };
 
 #endif

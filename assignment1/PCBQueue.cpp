@@ -113,7 +113,7 @@ void PCBQueue::snapshot() {
 		cout << setw(10) << currPCB->total_burst_time;
 		cout << setw(10) << (currPCB->total_burst_time / currPCB->cpu_usage); 
 		cout << endl;	
-		 
+		currPCB->print_page_table(); 
 	}
 }
 

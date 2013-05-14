@@ -3,6 +3,7 @@
 #include <iostream>
 #include "PCBHandler.h"
 #include "DiskQueue.h"
+#include "FrameTable.h"
 #include <vector>
 #include <stdlib.h>
 #include <limits>
@@ -27,6 +28,11 @@ bool isPowerOfTwo(int x) {
 	return (x != 0) && ((x & (x - 1)) == 0);
 }
 
+void validate_hex(int &input) {
+	cout << "Please enter the starting location in memory as a hexadecimal integer: " << endl;
+	cin >> hex >> input;
+}
+
 void sys_gen(int &num_p, int &num_d, int &num_c, float &burst_estimate, int &total_mem, int &max_process_mem, int &page_size) {
 
 	cout << "Please enter the number of printers in the system: ";
@@ -44,6 +50,7 @@ void sys_gen(int &num_p, int &num_d, int &num_c, float &burst_estimate, int &tot
 	cin >> max_process_mem;
 
 	while (page_size <= 0 || total_mem % page_size != 0 || total_mem <= 0) {
+			cin.clear();	
 			page_size = 0;	
 			while (isPowerOfTwo(page_size) != true) { 
 				cout << "Please enter the page size: " << endl;
@@ -75,7 +82,7 @@ PCB * create_process(PCBQueue &readyQueue, PCBHandler pcbFactory) {
 	return newPCB;
 }
 
-void terminate_process(CPU *&cpu, PCBHandler pcbFactory) {
+void terminate_process(CPU *&cpu, PCBHandler pcbFactory, int &terminated_pid) {
 	if (cpu->currPCB == NULL) {
 		cout << "No processes running in the CPU." << endl;
 	}
@@ -84,7 +91,8 @@ void terminate_process(CPU *&cpu, PCBHandler pcbFactory) {
 		terminated = cpu->currPCB;
 		cout << "Terminated process id: " << terminated->pid << endl;
 		cout << "Process had a total CPU time of " << terminated->total_burst_time << endl;
-
+		
+		terminated_pid = terminated->pid;
 		cpu->total_cpu_time += terminated->total_burst_time;
 		cpu->num_processes++;
 		cpu->currPCB = NULL;
@@ -98,10 +106,11 @@ int main() {
 	int i;
 	float alpha = -1;
 	float burst_estimate;
-	int total_mem, max_process_mem, page_size = 0;
+	int total_mem, max_process_mem, page_size = -1;
 	vector<PCBQueue> print_queues;
 	vector<DiskQueue> disk_queues;
 	vector<PCBQueue> cdrw_queues;
+	
 	CPU * cpu = new CPU;
 	cpu->total_cpu_time = 0;
 	cpu->currPCB = NULL;
@@ -137,6 +146,8 @@ int main() {
 		cout << "Please enter the value for alpha, a number between 0.0 and 1.0" << endl;
 		alpha = validate_float();
 	}
+
+	FrameTable frame_table(total_mem / page_size);
 
 	cout << "System generation section finished." << endl;
 
@@ -176,17 +187,46 @@ int main() {
 		// Create new process
 		if (input == "A") {
 			int proc_mem;
-			PCB * newPCB = create_process(readyQueue, pcbFactory);
-			validate_int("Please enter the process memory size: ", proc_mem);
-			newPCB->remaining_time = burst_estimate;
-			newPCB->burst_estimate = burst_estimate;
-			newPCB->actual_time = 0;
-			sys_call = true;
+			validate_integer("Please enter the process memory size: ", proc_mem);
+			if (proc_mem > total_mem) {
+				cout << "Process is larger than the total system memory." << endl;
+			}
+
+			else if (proc_mem > max_process_mem) {
+				cout << "Process is larger than the max process size." << endl;
+			}
+
+			else {
+				int num_pages;
+				PCB * newPCB = create_process(readyQueue, pcbFactory);
+				newPCB->remaining_time = burst_estimate;
+				newPCB->burst_estimate = burst_estimate;
+				newPCB->actual_time = 0;
+				newPCB->mem_size = proc_mem;
+				newPCB->setup_page_table(proc_mem, page_size);								
+				frame_table.allocate_frames(newPCB->pages, newPCB->pid);
+
+				int m, n = 0;
+				for (m; m < frame_table.frame_table.size(); m++) {
+					
+					for (n; n < newPCB->pages; n++) {
+						if (frame_table.frame_table[m] == newPCB->pid) {
+							cout << m << " " << n << endl;
+							newPCB->page_table[n] = m;
+							
+						}	
+					}
+				}	
+				sys_call = true;
+			}
 		}
 
 		// Terminate the currently running process
 		else if (input == "t") {
-			terminate_process(cpu, pcbFactory);
+			int terminated_pid;
+			terminate_process(cpu, pcbFactory, terminated_pid);
+
+			frame_table.free_frames(terminated_pid);
 			sys_call = true;
 		}
 	
@@ -227,6 +267,11 @@ int main() {
 				for (i=0; i<num_c; i++) {
 					cdrw_queues[i].snapshot();
 				}
+			}
+
+			else if (option == "m") {
+				frame_table.print_frame_table();
+				frame_table.print_free_frames();
 			}
 			sys_call = false;
 		}
@@ -323,7 +368,8 @@ int main() {
 				cin >> filename;
 
 				// Verify memory location is a number
-				validate_integer("Please enter the starting location in memory (integer): ", mem_loc);
+				
+				validate_hex(mem_loc);
 
 				// Ask how much time the process has run
 				float process_time;
@@ -393,6 +439,10 @@ int main() {
 					readyQueue.sjf_insert(readyPCB);
 					cout << "Process with id " << readyPCB->pid << " has moved to the ready queue." << endl;
 				}
+			}
+
+			else if (device == "K") {
+				
 			}
 
 			else {
